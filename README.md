@@ -1,4 +1,17 @@
+# LockIn
+
+LockIn is an app to optimise time spent during group study sessions by measuring the decibels of the surrounding environment, then triggering an alarm if the chosen sound threshold is exceeded for 5 seconds. A points system is incorporated: every second spent focusing earns a point, while every incident of triggering the alarm is a ten-point deduction. Points may be used as a reference of how productive a session was or how suitable an environment may be for locking in.
+
+**Link:** https://wit-hackathon-lock-in.vercel.app/
+
+## Using LockIn
+
+Ensure your system is on light mode to see all features. Pick your desired decibel level respective to the initial volume level measured by the app. Speaking level is approximately +25db above initial value and can be adjusted to preference.
+
+## How It's Made
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+
+**Tech used:** JavaScript, TypeScript, CSS, Next.js, React
 
 ## Getting Started
 
@@ -14,23 +27,4 @@ pnpm dev
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Open [http://localhost:3000](http://localhost:3000) with your browser and enable microphone input to see the result.

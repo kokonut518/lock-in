@@ -1,11 +1,14 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
+import Vol_adjust from "./Vol_adjust";
+import { usePointsSystem } from "./PointsSystem";
 
 export default function NoiseMonitor() {
   const [volume, setVolume] = useState(0);
   const [tooLoud, setTooLoud] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const [elapsedTime, setElapsedTime] = useState(0); // Timer state in seconds
+  const [threshold, setThreshold] = useState(-20); // set volume if no input is given
   
   const loudTimeRef = useRef(0); // how long it's been loud in ms
   const quietTimeRef = useRef(0); // how long it's been quiet in ms
@@ -13,9 +16,20 @@ export default function NoiseMonitor() {
   const timerStartRef = useRef(Date.now()); // when timer started
   const timerPausedTimeRef = useRef(0); // accumulated paused time
   const pauseStartRef = useRef<number | null>(null); // when current pause started
+  const quietShortRef = useRef(0); // time below threshold in ms
+  const graceWindow = 500;
+
+  // Ref to always hold latest threshold
+  const thresholdRef = useRef(threshold);
+  useEffect(() => {
+    thresholdRef.current = threshold;
+  }, [threshold]);
   
   // 🔹 keep a single Audio element reference
   const alarmRef = useRef<HTMLAudioElement | null>(null);
+
+  // points system
+  const points = usePointsSystem(tooLoud);
 
   useEffect(() => {
     if (!alarmRef.current) {
@@ -88,16 +102,31 @@ export default function NoiseMonitor() {
         const delta = now - lastCheckRef.current;
         lastCheckRef.current = now;
 
-        if (db > -30) {
+
+        // ✅ CHANGE: handle loud and quiet times with grace window
+        if (db > thresholdRef.current) {
           loudTimeRef.current += delta;
           quietTimeRef.current = 0;
+          quietShortRef.current = 0; // reset short quiet timer
         } else {
           quietTimeRef.current += delta;
+          quietShortRef.current += delta;
+
+          // Only reset countdown if quiet longer than grace period
+          if (quietShortRef.current >= graceWindow) {
+            loudTimeRef.current = 0;
+            if (countdown !== 0) setCountdown(0);
+          }
         }
 
-        // countdown = 5s - loud time
-        const remaining = Math.max(0, 5000 - loudTimeRef.current);
-        setCountdown(Math.ceil(remaining / 1000));
+        // ✅ CHANGE: update countdown only when loudTimeRef > 0
+        if (loudTimeRef.current > 0) {
+          const remaining = Math.max(0, 5000 - loudTimeRef.current);
+          const newCountdown = Math.ceil(remaining / 1000);
+          if (newCountdown !== countdown) {
+            setCountdown(newCountdown);
+          }
+        }
 
         // 🔹 trigger alarm after 5s loud
         if (loudTimeRef.current >= 5000 && !tooLoud) {
@@ -107,8 +136,8 @@ export default function NoiseMonitor() {
           }
         }
 
-        // 🔹 stop alarm after 5s quiet
-        if (tooLoud && quietTimeRef.current >= 5000) {
+        // 🔹 stop alarm after 2s quiet
+        if (tooLoud && quietTimeRef.current >= 2000) {
           loudTimeRef.current = 0;
           quietTimeRef.current = 0;
           setTooLoud(false);
@@ -131,7 +160,9 @@ export default function NoiseMonitor() {
   return (
     <div className="flex flex-col items-center p-6">
       <h1 className="text-2xl font-bold">📢 Study Room Noise Detector</h1>
-      
+
+      <Vol_adjust threshold={threshold} setThreshold={setThreshold} />
+
       {/* Timer Display */}
       <div className="mt-4 text-3xl font-mono bg-gray-100 px-4 py-2 rounded-lg border">
         <div className="text-sm text-gray-600 text-center mb-1">Study Timer</div>
@@ -140,8 +171,9 @@ export default function NoiseMonitor() {
       </div>
       
       <p className="mt-2">Current volume: {volume.toFixed(2)} dB</p>
+      <p className="mt-2 text-lg front-semibold">Points: {points}</p>
       
-      {!tooLoud && countdown > 0 && volume > -30 && (
+      {!tooLoud && countdown > 0 && (
         <div className="mt-4 text-yellow-600 font-bold text-2xl">
           Quiet down in {countdown}...
         </div>

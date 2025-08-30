@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
-import Vol_adjust from "./Vol_adjust"
+import Vol_adjust from "./Vol_adjust";
+import { usePointsSystem } from "./PointsSystem";
 
 export default function NoiseMonitor() {
   const [volume, setVolume] = useState(0);
@@ -18,6 +19,9 @@ export default function NoiseMonitor() {
   const [threshold, setThreshold] = useState(-20); // set volume if no input is given
   
   const thresholdRef = useRef(threshold); //Creates a ref that always holds latest threshold value input
+
+  const points = usePointsSystem(tooLoud);
+
   useEffect(() => {
   thresholdRef.current = threshold;
 }, [threshold]);
@@ -149,6 +153,7 @@ export default function NoiseMonitor() {
       </div>
       
       <p className="mt-2">Current volume: {volume.toFixed(2)} dB</p>
+      <p className="mt-2 text-xl font-semibold">Points: {points}</p>
       
       {!tooLoud && countdown > 0 && volume > thresholdRef.current && (
         <div className="mt-4 text-yellow-600 font-bold text-2xl">

@@ -1,10 +1,63 @@
 "use client";
-
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 export default function NoiseMonitor() {
   const [volume, setVolume] = useState(0);
   const [tooLoud, setTooLoud] = useState(false);
+  const [countdown, setCountdown] = useState(0);
+  const [elapsedTime, setElapsedTime] = useState(0); // Timer state in seconds
+  
+  const loudTimeRef = useRef(0); // how long it's been loud in ms
+  const quietTimeRef = useRef(0); // how long it's been quiet in ms
+  const lastCheckRef = useRef(Date.now()); // for volume checking
+  const timerStartRef = useRef(Date.now()); // when timer started
+  const timerPausedTimeRef = useRef(0); // accumulated paused time
+  const pauseStartRef = useRef<number | null>(null); // when current pause started
+  
+  // 🔹 keep a single Audio element reference
+  const alarmRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    if (!alarmRef.current) {
+      // ✅ change: reuse a single audio object
+      alarmRef.current = new Audio("/Youtuber常用的聲音素材--烏鴉叫.mp3");
+      alarmRef.current.loop = true; // keep looping while loud
+    }
+  }, []);
+
+  // Timer effect - updates every 100ms when not paused
+  useEffect(() => {
+    const timerInterval = setInterval(() => {
+      if (!tooLoud) { // Timer runs when not showing "SHUT UP!"
+        const now = Date.now();
+        const totalElapsed = now - timerStartRef.current - timerPausedTimeRef.current;
+        setElapsedTime(Math.floor(totalElapsed / 1000));
+      }
+    }, 100);
+
+    return () => clearInterval(timerInterval);
+  }, [tooLoud]);
+
+  // Handle timer pause/resume when tooLoud state changes
+  useEffect(() => {
+    if (tooLoud) {
+      // Start pause
+      pauseStartRef.current = Date.now();
+    } else {
+      // End pause
+      if (pauseStartRef.current !== null) {
+        timerPausedTimeRef.current += Date.now() - pauseStartRef.current;
+        pauseStartRef.current = null;
+      }
+    }
+  }, [tooLoud]);
+
+  // Format time as MM:SS
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
 
   useEffect(() => {
     let audioContext: AudioContext;
@@ -29,9 +82,43 @@ export default function NoiseMonitor() {
         }
         let rms = Math.sqrt(sum / dataArray.length);
         let db = 20 * Math.log10(rms);
-
         setVolume(db);
-        setTooLoud(db > -20); // threshold, adjust as needed
+
+        const now = Date.now();
+        const delta = now - lastCheckRef.current;
+        lastCheckRef.current = now;
+
+        if (db > -30) {
+          loudTimeRef.current += delta;
+          quietTimeRef.current = 0;
+        } else {
+          quietTimeRef.current += delta;
+        }
+
+        // countdown = 5s - loud time
+        const remaining = Math.max(0, 5000 - loudTimeRef.current);
+        setCountdown(Math.ceil(remaining / 1000));
+
+        // 🔹 trigger alarm after 5s loud
+        if (loudTimeRef.current >= 5000 && !tooLoud) {
+          setTooLoud(true);
+          if (alarmRef.current && alarmRef.current.paused) {
+            alarmRef.current.play();
+          }
+        }
+
+        // 🔹 stop alarm after 5s quiet
+        if (tooLoud && quietTimeRef.current >= 5000) {
+          loudTimeRef.current = 0;
+          quietTimeRef.current = 0;
+          setTooLoud(false);
+          setCountdown(0);
+          if (alarmRef.current && !alarmRef.current.paused) {
+            alarmRef.current.pause(); // ✅ stop sound
+            alarmRef.current.currentTime = 0; // reset to start
+          }
+        }
+
         requestAnimationFrame(checkVolume);
       }
 
@@ -39,22 +126,27 @@ export default function NoiseMonitor() {
     }
 
     initMic();
-  }, []);
-
-    // 🔊 Play alarm when noise goes above threshold
-  useEffect(() => {
-    if (tooLoud) {
-      const alarm = new Audio("/Youtuber常用的聲音素材--烏鴉叫.mp3"); // file inside /public
-      alarm.play().catch(() => {}); // handle autoplay restriction
-    }
-  }, [tooLoud]); // runs only when `tooLoud` changes
-
+  }, [tooLoud]);
 
   return (
     <div className="flex flex-col items-center p-6">
       <h1 className="text-2xl font-bold">📢 Study Room Noise Detector</h1>
+      
+      {/* Timer Display */}
+      <div className="mt-4 text-3xl font-mono bg-gray-100 px-4 py-2 rounded-lg border">
+        <div className="text-sm text-gray-600 text-center mb-1">Study Timer</div>
+        <div className="text-center">{formatTime(elapsedTime)}</div>
+        {tooLoud && <div className="text-xs text-red-500 text-center">⏸️ PAUSED</div>}
+      </div>
+      
       <p className="mt-2">Current volume: {volume.toFixed(2)} dB</p>
-
+      
+      {!tooLoud && countdown > 0 && volume > -30 && (
+        <div className="mt-4 text-yellow-600 font-bold text-2xl">
+          Quiet down in {countdown}...
+        </div>
+      )}
+      
       {tooLoud && (
         <div className="mt-4 text-red-600 font-bold text-4xl animate-bounce">
           🚨 SHUT UP! 🚨

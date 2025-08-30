@@ -150,7 +150,7 @@ export default function NoiseMonitor() {
       
       <p className="mt-2">Current volume: {volume.toFixed(2)} dB</p>
       
-      {!tooLoud && countdown > 0 && volume > -30 && (
+      {!tooLoud && countdown > 0 && volume > thresholdRef.current && (
         <div className="mt-4 text-yellow-600 font-bold text-2xl">
           Quiet down in {countdown}...
         </div>

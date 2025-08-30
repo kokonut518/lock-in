@@ -5,7 +5,7 @@ import { usePointsSystem } from "./PointsSystem";
 import { Merriweather } from "next/font/google";
 const merriweather = Merriweather({
   subsets: ["latin"],
-  weight: ["400", "700"], // normal + bold
+  weight: ["400", "700"],
 });
 
 

@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
-import Vol_adjust from "./Vol_adjust";
+import Vol_adjust from "./Vol_adjust" 
 import { usePointsSystem } from "./PointsSystem";
 
 export default function NoiseMonitor() {
@@ -8,24 +8,23 @@ export default function NoiseMonitor() {
   const [tooLoud, setTooLoud] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const [elapsedTime, setElapsedTime] = useState(0); // Timer state in seconds
-  const [threshold, setThreshold] = useState(-20); // set volume if no input is given
-  
-  const loudTimeRef = useRef(0); // how long it's been loud in ms
-  const quietTimeRef = useRef(0); // how long it's been quiet in ms
-  const lastCheckRef = useRef(Date.now()); // for volume checking
-  const timerStartRef = useRef(Date.now()); // when timer started
-  const timerPausedTimeRef = useRef(0); // accumulated paused time
-  const pauseStartRef = useRef<number | null>(null); // when current pause started
-  const quietShortRef = useRef(0); // time below threshold in ms
+  const [threshold, setThreshold] = useState(-20); 
+
+  const loudTimeRef = useRef(0);
+  const quietTimeRef = useRef(0);
+  const lastCheckRef = useRef(Date.now());
+  const timerStartRef = useRef(Date.now());
+  const timerPausedTimeRef = useRef(0);
+  const pauseStartRef = useRef<number | null>(null);
+  const quietShortRef = useRef(0);
   const graceWindow = 500;
 
-  // Ref to always hold latest threshold
+  // keep a ref of latest threshold value
   const thresholdRef = useRef(threshold);
   useEffect(() => {
     thresholdRef.current = threshold;
   }, [threshold]);
-  
-  // 🔹 keep a single Audio element reference
+
   const alarmRef = useRef<HTMLAudioElement | null>(null);
 
   // points system
@@ -33,16 +32,15 @@ export default function NoiseMonitor() {
 
   useEffect(() => {
     if (!alarmRef.current) {
-      // ✅ change: reuse a single audio object
       alarmRef.current = new Audio("/Youtuber常用的聲音素材--烏鴉叫.mp3");
-      alarmRef.current.loop = true; // keep looping while loud
+      alarmRef.current.loop = true;
     }
   }, []);
 
-  // Timer effect - updates every 100ms when not paused
+  // Timer effect
   useEffect(() => {
     const timerInterval = setInterval(() => {
-      if (!tooLoud) { // Timer runs when not showing "SHUT UP!"
+      if (!tooLoud) {
         const now = Date.now();
         const totalElapsed = now - timerStartRef.current - timerPausedTimeRef.current;
         setElapsedTime(Math.floor(totalElapsed / 1000));
@@ -52,13 +50,10 @@ export default function NoiseMonitor() {
     return () => clearInterval(timerInterval);
   }, [tooLoud]);
 
-  // Handle timer pause/resume when tooLoud state changes
   useEffect(() => {
     if (tooLoud) {
-      // Start pause
       pauseStartRef.current = Date.now();
     } else {
-      // End pause
       if (pauseStartRef.current !== null) {
         timerPausedTimeRef.current += Date.now() - pauseStartRef.current;
         pauseStartRef.current = null;
@@ -66,7 +61,6 @@ export default function NoiseMonitor() {
     }
   }, [tooLoud]);
 
-  // Format time as MM:SS
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -97,55 +91,46 @@ export default function NoiseMonitor() {
         let rms = Math.sqrt(sum / dataArray.length);
         let db = 20 * Math.log10(rms);
         setVolume(db);
-        setTooLoud(db > thresholdRef.current); // threshold, adjust as needed taking most recent threshold value
 
         const now = Date.now();
         const delta = now - lastCheckRef.current;
         lastCheckRef.current = now;
 
-
-        // ✅ CHANGE: handle loud and quiet times with grace window
+        // use thresholdRef.current
         if (db > thresholdRef.current) {
           loudTimeRef.current += delta;
           quietTimeRef.current = 0;
-          quietShortRef.current = 0; // reset short quiet timer
+          quietShortRef.current = 0;
         } else {
           quietTimeRef.current += delta;
           quietShortRef.current += delta;
 
-          // Only reset countdown if quiet longer than grace period
           if (quietShortRef.current >= graceWindow) {
             loudTimeRef.current = 0;
             if (countdown !== 0) setCountdown(0);
           }
         }
 
-        // ✅ CHANGE: update countdown only when loudTimeRef > 0
+        // update countdown only when loudTimeRef > 0
         if (loudTimeRef.current > 0) {
           const remaining = Math.max(0, 5000 - loudTimeRef.current);
           const newCountdown = Math.ceil(remaining / 1000);
-          if (newCountdown !== countdown) {
-            setCountdown(newCountdown);
-          }
+          if (newCountdown !== countdown) setCountdown(newCountdown);
         }
 
-        // 🔹 trigger alarm after 5s loud
         if (loudTimeRef.current >= 5000 && !tooLoud) {
           setTooLoud(true);
-          if (alarmRef.current && alarmRef.current.paused) {
-            alarmRef.current.play();
-          }
+          if (alarmRef.current && alarmRef.current.paused) alarmRef.current.play();
         }
 
-        // 🔹 stop alarm after 2s quiet
         if (tooLoud && quietTimeRef.current >= 2000) {
           loudTimeRef.current = 0;
           quietTimeRef.current = 0;
           setTooLoud(false);
           setCountdown(0);
           if (alarmRef.current && !alarmRef.current.paused) {
-            alarmRef.current.pause(); // ✅ stop sound
-            alarmRef.current.currentTime = 0; // reset to start
+            alarmRef.current.pause();
+            alarmRef.current.currentTime = 0;
           }
         }
 
@@ -170,22 +155,21 @@ export default function NoiseMonitor() {
         <div className="text-center">{formatTime(elapsedTime)}</div>
         {tooLoud && <div className="text-xs text-red-500 text-center">⏸️ PAUSED</div>}
       </div>
-      
+
       <p className="mt-2">Current volume: {volume.toFixed(2)} dB</p>
       <p className="mt-2 text-lg front-semibold">Points: {points}</p>
-      
+
       {!tooLoud && countdown > 0 && (
         <div className="mt-4 text-yellow-600 font-bold text-2xl">
           Quiet down in {countdown}...
         </div>
       )}
-      
+
       {tooLoud && (
         <div className="mt-4 text-red-600 font-bold text-4xl animate-bounce">
           🚨 SHUT UP! 🚨
         </div>
       )}
-      <Vol_adjust threshold={threshold} setThreshold={setThreshold} />
     </div>
   );
 }

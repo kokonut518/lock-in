@@ -14,7 +14,7 @@ export default function NoiseMonitor() {
   const [tooLoud, setTooLoud] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const [elapsedTime, setElapsedTime] = useState(0); // Timer state in seconds
-  const [threshold, setThreshold] = useState(-20); 
+  const [threshold, setThreshold] = useState(-30); 
 
   const loudTimeRef = useRef(0);
   const quietTimeRef = useRef(0);

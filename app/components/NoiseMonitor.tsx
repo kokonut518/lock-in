@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
+import Vol_adjust from "./Vol_adjust"
 
 export default function NoiseMonitor() {
   const [volume, setVolume] = useState(0);
@@ -13,6 +14,15 @@ export default function NoiseMonitor() {
   const timerStartRef = useRef(Date.now()); // when timer started
   const timerPausedTimeRef = useRef(0); // accumulated paused time
   const pauseStartRef = useRef<number | null>(null); // when current pause started
+
+  const [volume, setVolume] = useState(0);
+  const [tooLoud, setTooLoud] = useState(false);
+  const [threshold, setThreshold] = useState(-20); // set volume if no input is given
+  
+  const thresholdRef = useRef(threshold); //Creates a ref that always holds latest threshold value input
+  useEffect(() => {
+  thresholdRef.current = threshold;
+}, [threshold]);
   
   // 🔹 keep a single Audio element reference
   const alarmRef = useRef<HTMLAudioElement | null>(null);
@@ -83,12 +93,13 @@ export default function NoiseMonitor() {
         let rms = Math.sqrt(sum / dataArray.length);
         let db = 20 * Math.log10(rms);
         setVolume(db);
+        setTooLoud(db > thresholdRef.current); // threshold, adjust as needed taking most recent threshold value
 
         const now = Date.now();
         const delta = now - lastCheckRef.current;
         lastCheckRef.current = now;
 
-        if (db > -30) {
+        if (db > thresholdRef.current) {
           loudTimeRef.current += delta;
           quietTimeRef.current = 0;
         } else {
@@ -152,6 +163,7 @@ export default function NoiseMonitor() {
           🚨 SHUT UP! 🚨
         </div>
       )}
+      <Vol_adjust threshold={threshold} setThreshold={setThreshold} />
     </div>
   );
 }

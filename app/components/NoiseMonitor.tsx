@@ -1,5 +1,9 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
+<<<<<<< HEAD
+import Vol_adjust from "./Vol_adjust";
+import { usePointsSystem } from "./PointsSystem";
+=======
 import Vol_adjust from "./Vol_adjust" 
 import { usePointsSystem } from "./PointsSystem";
 import { Merriweather } from "next/font/google";
@@ -8,6 +12,7 @@ const merriweather = Merriweather({
   weight: ["400", "700"],
 });
 
+>>>>>>> 6e9cbc4877ab647f52c84a2a49dec7ec5da0484f
 
 export default function NoiseMonitor() {
   const [volume, setVolume] = useState(0);
@@ -16,6 +21,14 @@ export default function NoiseMonitor() {
   const [elapsedTime, setElapsedTime] = useState(0); // Timer state in seconds
   const [threshold, setThreshold] = useState(-30); 
 
+<<<<<<< HEAD
+  const [threshold, setThreshold] = useState(-20); // set volume if no input is given
+  
+  const thresholdRef = useRef(threshold); //Creates a ref that always holds latest threshold value input
+
+  const points = usePointsSystem(tooLoud);
+
+=======
   const loudTimeRef = useRef(0);
   const quietTimeRef = useRef(0);
   const lastCheckRef = useRef(Date.now());
@@ -27,6 +40,7 @@ export default function NoiseMonitor() {
 
   // keep a ref of latest threshold value
   const thresholdRef = useRef(threshold);
+>>>>>>> 6e9cbc4877ab647f52c84a2a49dec7ec5da0484f
   useEffect(() => {
     thresholdRef.current = threshold;
   }, [threshold]);
@@ -164,6 +178,18 @@ export default function NoiseMonitor() {
         <div className="text-center">{formatTime(elapsedTime)}</div>
         {tooLoud && <div className="text-xs text-red-500 text-center">⏸️ PAUSED</div>}
       </div>
+<<<<<<< HEAD
+      
+      <p className="mt-2">Current volume: {volume.toFixed(2)} dB</p>
+      <p className="mt-2 text-xl font-semibold">Points: {points}</p>
+      
+      {!tooLoud && countdown > 0 && volume > thresholdRef.current && (
+        <div className="mt-4 text-yellow-600 font-bold text-2xl">
+          Quiet down in {countdown}...
+        </div>
+      )}
+      
+=======
 
       <p className="mt-2">Current volume: {(volume + 100).toFixed(2)} dB</p>
       <p className="mt-2 text-lg front-semibold">Points: {points}</p>
@@ -181,6 +207,7 @@ export default function NoiseMonitor() {
       </div>
 
 
+>>>>>>> 6e9cbc4877ab647f52c84a2a49dec7ec5da0484f
       {tooLoud && (
         <div className="mt-4 text-red-600 font-bold text-4xl animate-bounce">
           🚨 SHUT UP! 🚨

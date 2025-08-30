@@ -97,6 +97,7 @@ export default function NoiseMonitor() {
         let rms = Math.sqrt(sum / dataArray.length);
         let db = 20 * Math.log10(rms);
         setVolume(db);
+        setTooLoud(db > thresholdRef.current); // threshold, adjust as needed taking most recent threshold value
 
         const now = Date.now();
         const delta = now - lastCheckRef.current;
@@ -184,6 +185,7 @@ export default function NoiseMonitor() {
           🚨 SHUT UP! 🚨
         </div>
       )}
+      <Vol_adjust threshold={threshold} setThreshold={setThreshold} />
     </div>
   );
 }

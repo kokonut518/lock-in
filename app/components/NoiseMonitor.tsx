@@ -15,8 +15,6 @@ export default function NoiseMonitor() {
   const timerPausedTimeRef = useRef(0); // accumulated paused time
   const pauseStartRef = useRef<number | null>(null); // when current pause started
 
-  const [volume, setVolume] = useState(0);
-  const [tooLoud, setTooLoud] = useState(false);
   const [threshold, setThreshold] = useState(-20); // set volume if no input is given
   
   const thresholdRef = useRef(threshold); //Creates a ref that always holds latest threshold value input

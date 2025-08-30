@@ -13,7 +13,7 @@ interface VolAdjustProps {
 export default function Vol_adjust({ threshold, setThreshold }: VolAdjustProps) {
  
   return (
-    <div className="flex flex-col items-center p-6 space-y-4 bg-black text-white min-h-screen">
+    <div className="flex flex-col items-center p-6 space-y-4 bg-white text-white min-h-screen">
       {/* Force visible threshold input box */}
       <div className="w-full max-w-xs bg-white rounded p-4 text-black">
         <label htmlFor="threshold" className="block font-semibold mb-2">

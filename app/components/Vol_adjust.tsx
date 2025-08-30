@@ -19,8 +19,8 @@ export default function Vol_adjust({ threshold, setThreshold }: VolAdjustProps) 
         id="threshold"
         type="number"
         className="w-full px-3 py-2 border border-gray-400 rounded"
-        value={threshold}
-        onChange={(e) => setThreshold(Number(e.target.value))}
+        value={threshold + 100}
+        onChange={(e) => setThreshold(Number(e.target.value) - 100)}
         step="1"
       />
     </div>

@@ -165,7 +165,7 @@ export default function NoiseMonitor() {
         {tooLoud && <div className="text-xs text-red-500 text-center">⏸️ PAUSED</div>}
       </div>
 
-      <p className="mt-2">Current volume: {volume.toFixed(2)} dB</p>
+      <p className="mt-2">Current volume: {(volume + 100).toFixed(2)} dB</p>
       <p className="mt-2 text-lg front-semibold">Points: {points}</p>
 
       {/* Reserve space for countdown to prevent layout shift */}

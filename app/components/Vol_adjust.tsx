@@ -11,7 +11,7 @@ interface VolAdjustProps {
 
 export default function Vol_adjust({ threshold, setThreshold }: VolAdjustProps) {
   return (
-    <div className="w-full max-w-xs bg-white rounded p-4 text-black mt-2 mb-4">
+    <div className="w-full max-w-xs bg-[#D8C9A9] rounded p-4 text-black mt-2 mb-4">
       <label htmlFor="threshold" className="block font-semibold mb-2">
         Set Threshold (dB)
       </label>

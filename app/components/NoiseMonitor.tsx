@@ -2,6 +2,12 @@
 import { useEffect, useState, useRef } from "react";
 import Vol_adjust from "./Vol_adjust" 
 import { usePointsSystem } from "./PointsSystem";
+import { Merriweather } from "next/font/google";
+const merriweather = Merriweather({
+  subsets: ["latin"],
+  weight: ["400", "700"], // normal + bold
+});
+
 
 export default function NoiseMonitor() {
   const [volume, setVolume] = useState(0);
@@ -144,8 +150,11 @@ export default function NoiseMonitor() {
   }, [tooLoud]);
 
   return (
-    <div className="flex flex-col items-center p-6">
-      <h1 className="text-2xl font-bold">📢 Study Room Noise Detector</h1>
+    <div 
+      className={`flex flex-col items-center p-6 min-h-screen w-full ${merriweather.className}`}
+      style={{ backgroundColor: "#F1EEE3" }}
+    >
+      <h1 className="text-2xl font-bold">Time to Lock In</h1>
 
       <Vol_adjust threshold={threshold} setThreshold={setThreshold} />
 
@@ -159,11 +168,18 @@ export default function NoiseMonitor() {
       <p className="mt-2">Current volume: {volume.toFixed(2)} dB</p>
       <p className="mt-2 text-lg front-semibold">Points: {points}</p>
 
-      {!tooLoud && countdown > 0 && (
-        <div className="mt-4 text-yellow-600 font-bold text-2xl">
-          Quiet down in {countdown}...
-        </div>
-      )}
+      {/* Reserve space for countdown to prevent layout shift */}
+      <div className="mt-4 h-10 flex items-center justify-center">
+        {!tooLoud && countdown > 0 ? (
+          <div className="text-yellow-600 font-bold text-2xl">
+            Quiet down in {countdown}...
+          </div>
+        ) : (
+          // keeps space reserved
+          <div className="invisible text-2xl">Quiet down in 0...</div>
+        )}
+      </div>
+
 
       {tooLoud && (
         <div className="mt-4 text-red-600 font-bold text-4xl animate-bounce">
